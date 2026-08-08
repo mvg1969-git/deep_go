@@ -11,7 +11,29 @@ import (
 // go test -v homework_test.go
 
 func Defragment(memory []byte, pointers []unsafe.Pointer) {
-	// need to implement
+	if len(pointers) == 0 {
+		return
+	}
+
+	// Шаг 1: Переносим данные в начало и обновляем указатели
+	writeIdx := 0
+	for i := 0; i < len(pointers); i++ {
+		// Читаем значение по старому адресу
+		val := *(*byte)(pointers[i])
+
+		// Записываем в целевую ячейку памяти
+		memory[writeIdx] = val
+
+		// Обновляем указатель, чтобы он смотрел на новый адрес
+		pointers[i] = unsafe.Pointer(&memory[writeIdx])
+
+		writeIdx++
+	}
+
+	// Шаг 2: Зануляем оставшуюся память в конце
+	for i := writeIdx; i < len(memory); i++ {
+		memory[i] = 0x00
+	}
 }
 
 func TestDefragmentation(t *testing.T) {

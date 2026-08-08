@@ -10,81 +10,85 @@ import (
 
 type Option func(*GamePerson)
 
-func WithName(name string) func(*GamePerson) {
+func WithName(name string) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		// Копируем символы строки прямо в массив байт
+		copy(person.Name[:], name)
+		person.nameLen = uint8(len(name))
 	}
 }
 
-func WithCoordinates(x, y, z int) func(*GamePerson) {
+func WithCoordinates(x, y, z int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.coordX = int16(x)
+		person.coordY = int16(y)
+		person.coordZ = int16(z)
 	}
 }
 
-func WithGold(gold int) func(*GamePerson) {
+func WithGold(gold int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.goldVal = int16(gold)
 	}
 }
 
-func WithMana(mana int) func(*GamePerson) {
+func WithMana(mana int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.manaVal = int16(mana)
 	}
 }
 
-func WithHealth(health int) func(*GamePerson) {
+func WithHealth(health int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.healthVal = int16(health)
 	}
 }
 
-func WithRespect(respect int) func(*GamePerson) {
+func WithRespect(respect int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.respectVal = int16(respect)
 	}
 }
 
-func WithStrength(strength int) func(*GamePerson) {
+func WithStrength(strength int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.strengthVal = int16(strength)
 	}
 }
 
-func WithExperience(experience int) func(*GamePerson) {
+func WithExperience(experience int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.expVal = int32(experience)
 	}
 }
 
-func WithLevel(level int) func(*GamePerson) {
+func WithLevel(level int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.levelVal = int16(level)
 	}
 }
 
-func WithHouse() func(*GamePerson) {
+func WithHouse() Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.flags |= 1
 	}
 }
 
-func WithGun() func(*GamePerson) {
+func WithGun() Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.flags |= 2
 	}
 }
 
-func WithFamily() func(*GamePerson) {
+func WithFamily() Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.flags |= 4
 	}
 }
 
-func WithType(personType int) func(*GamePerson) {
+func WithType(personType int) Option {
 	return func(person *GamePerson) {
-		// need to implement
+		person.pType = uint8(personType)
 	}
 }
 
@@ -94,88 +98,94 @@ const (
 	WarriorGamePersonType
 )
 
+// Итоговый размер структуры: РОВНО 64 БАЙТА
 type GamePerson struct {
-	// need to implement
+	name        [42]byte // 42 байта — символы латиницы (inline)
+	nameLen     uint8    // 1 байт  — реальная длина строки
+	flags       uint8    // 1 байт  — битовая маска (House, Gun, Family)
+	pType       uint8    // 1 байт  — тип персонажа
+	_           uint8    // 1 байт  — padding для выравнивания следующего int32 на границу 4 байт
+	expVal      int32    // 4 байта — опыт (оставляем большим, так как опыта обычно много)
+	coordX      int16    // 2 байта
+	coordY      int16    // 2 байта
+	coordZ      int16    // 2 байта
+	goldVal     int16    // 2 байта
+	manaVal     int16    // 2 байта
+	healthVal   int16    // 2 байта
+	respectVal  int16    // 2 байта
+	strengthVal int16    // 2 байта
+	levelVal    int16    // 2 байта
 }
 
-func NewGamePerson(options ...Option) GamePerson {
-	// need to implement
-	return GamePerson{}
+func NewGamePerson(Options ...Option) GamePerson {
+	p := GamePerson{}
+	for _, opt := range Options {
+		opt(&p)
+	}
+	return p
 }
+
+// Геттеры
 
 func (p *GamePerson) Name() string {
-	// need to implement
-	return ""
+	// Безопасно преобразуем часть массива в строку без сохранения указателя на внешние данные
+	return string(p.name[:p.nameLen])
 }
 
 func (p *GamePerson) X() int {
-	// need to implement
-	return 0
+	return int(p.coordX)
 }
 
 func (p *GamePerson) Y() int {
-	// need to implement
-	return 0
+	return int(p.coordY)
 }
 
 func (p *GamePerson) Z() int {
-	// need to implement
-	return 0
+	return int(p.coordZ)
 }
 
 func (p *GamePerson) Gold() int {
-	// need to implement
-	return 0
+	return int(p.goldVal)
 }
 
 func (p *GamePerson) Mana() int {
-	// need to implement
-	return 0
+	return int(p.manaVal)
 }
 
 func (p *GamePerson) Health() int {
-	// need to implement
-	return 0
+	return int(p.healthVal)
 }
 
 func (p *GamePerson) Respect() int {
-	// need to implement
-	return 0
+	return int(p.respectVal)
 }
 
 func (p *GamePerson) Strength() int {
-	// need to implement
-	return 0
+	return int(p.strengthVal)
 }
 
 func (p *GamePerson) Experience() int {
-	// need to implement
-	return 0
+	return int(p.expVal)
 }
 
 func (p *GamePerson) Level() int {
-	// need to implement
-	return 0
+	return int(p.levelVal)
 }
 
 func (p *GamePerson) HasHouse() bool {
-	// need to implement
-	return false
+	return (p.flags & 1) != 0
 }
 
 func (p *GamePerson) HasGun() bool {
-	// need to implement
-	return false
+	return (p.flags & 2) != 0
 }
 
-func (p *GamePerson) HasFamilty() bool {
-	// need to implement
-	return false
+func (p *GamePerson) HasFamily() bool {
+	return (p.flags & 4) != 0
 }
 
-func (p *GamePerson) Type() int {
-	// need to implement
-	return 0
+func (p *GamePerson) PersonType() int {
+	return int(p.pType)
 }
 
 func TestGamePerson(t *testing.T) {
@@ -192,7 +202,7 @@ func TestGamePerson(t *testing.T) {
 	const experience = 10
 	const level = 10
 
-	options := []Option{
+	Options := []Option{
 		WithName(name),
 		WithCoordinates(x, y, z),
 		WithGold(gold),
@@ -207,7 +217,7 @@ func TestGamePerson(t *testing.T) {
 		WithType(personType),
 	}
 
-	person := NewGamePerson(options...)
+	person := NewGamePerson(Options...)
 	assert.Equal(t, name, person.Name())
 	assert.Equal(t, x, person.X())
 	assert.Equal(t, y, person.Y())

@@ -8,30 +8,70 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type COWBuffer struct {
+type cowBuffer struct {
 	data []byte
 	refs *int
-	// need to implement
 }
 
-func NewCOWBuffer(data []byte) COWBuffer {
-	return COWBuffer{} // need to implement
+func NewCOWBuffer(data []byte) cowBuffer {
+	// Создаем счетчик ссылок на куче (значение 1)
+	refs := new(int)
+	*refs = 1
+	return cowBuffer{
+		data: data,
+		refs: refs,
+	}
 }
 
-func (b *COWBuffer) Clone() COWBuffer {
-	return COWBuffer{} // need to implement
+func (b *cowBuffer) Clone() cowBuffer {
+	if b.refs != nil {
+		*b.refs++ // Увеличиваем счетчик при создании копии
+	}
+	return cowBuffer{
+		data: b.data,
+		refs: b.refs,
+	}
 }
 
-func (b *COWBuffer) Close() {
-	// need to implement
+func (b *cowBuffer) Close() {
+	if b.refs == nil {
+		return
+	}
+	*b.refs--
+	if *b.refs == 0 {
+		b.data = nil
+		b.refs = nil
+	}
 }
 
-func (b *COWBuffer) Update(index int, value byte) bool {
-	return false // need to implement
+func (b *cowBuffer) Update(index int, value byte) bool {
+	if index < 0 || index >= len(b.data) {
+		return false
+	}
+
+	// Если ссылка уникальна (*refs == 1), копирование не требуется
+	if b.refs != nil && *b.refs > 1 {
+		// Разделяем владение: создаем новый массив
+		newData := make([]byte, len(b.data))
+		copy(newData, b.data)
+
+		*b.refs-- // Уменьшаем счетчик старого буфера
+
+		b.data = newData
+		b.refs = new(int) // Создаем новый счетчик для текущего буфера
+		*b.refs = 1
+	}
+
+	b.data[index] = value
+	return true
 }
 
-func (b *COWBuffer) String() string {
-	return "" // need to implement
+func (b *cowBuffer) String() string {
+	if len(b.data) == 0 {
+		return ""
+	}
+	// Zero-allocation преобразование []byte в string (Go 1.20+)
+	return unsafe.String(unsafe.SliceData(b.data), len(b.data))
 }
 
 func TestCOWBuffer(t *testing.T) {

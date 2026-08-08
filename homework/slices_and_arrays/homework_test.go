@@ -9,37 +9,66 @@ import (
 
 // go test -v homework_test.go
 
-type CircularQueue struct {
-	values []int
-	// need to implement
+type circularQueue struct {
+	values   []int
+	head     int
+	tail     int
+	count    int
+	capacity int
 }
 
-func NewCircularQueue(size int) CircularQueue {
-	return CircularQueue{} // need to implement
+func NewCircularQueue(size int) circularQueue {
+	return circularQueue{
+		values:   make([]int, size),
+		head:     0,
+		tail:     0,
+		count:    0,
+		capacity: size,
+	}
 }
 
-func (q *CircularQueue) Push(value int) bool {
-	return false // need to implement
+func (q *circularQueue) Push(value int) bool {
+	if q.Full() {
+		return false
+	}
+	q.values[q.tail] = value
+	q.tail = (q.tail + 1) % q.capacity
+	q.count++
+	return true
 }
 
-func (q *CircularQueue) Pop() bool {
-	return false // need to implement
+func (q *circularQueue) Pop() bool {
+	if q.Empty() {
+		return false
+	}
+	q.head = (q.head + 1) % q.capacity
+	q.count--
+	return true
 }
 
-func (q *CircularQueue) Front() int {
-	return -1 // need to implement
+func (q *circularQueue) Front() int {
+	if q.Empty() {
+		return -1
+	}
+	return q.values[q.head]
 }
 
-func (q *CircularQueue) Back() int {
-	return -1 // need to implement
+func (q *circularQueue) Back() int {
+	if q.Empty() {
+		return -1
+	}
+	// Так как tail указывает на следующий пустой слот,
+	// последний элемент находится по индексу (tail - 1 + capacity) % capacity
+	lastIndex := (q.tail - 1 + q.capacity) % q.capacity
+	return q.values[lastIndex]
 }
 
-func (q *CircularQueue) Empty() bool {
-	return false // need to implement
+func (q *circularQueue) Empty() bool {
+	return q.count == 0
 }
 
-func (q *CircularQueue) Full() bool {
-	return false // need to implement
+func (q *circularQueue) Full() bool {
+	return q.count == q.capacity
 }
 
 func TestCircularQueue(t *testing.T) {

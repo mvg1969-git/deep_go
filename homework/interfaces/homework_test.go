@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,29 +11,43 @@ import (
 
 type UserService struct {
 	// not need to implement
-	NotEmptyStruct bool
+	notemptystruct bool
 }
+
 type MessageService struct {
 	// not need to implement
-	NotEmptyStruct bool
+	notemptystruct bool
 }
 
-type Container struct {
-	// need to implement
+// container хранит фабричные функции для создания объектов.
+type container struct {
+	factories map[string]func() interface{}
 }
 
-func NewContainer() *Container {
-	// need to implement
-	return &Container{}
+// newcontainer инициализирует контейнер и его внутреннюю карту.
+func NewContainer() *container {
+	return &container{
+		factories: make(map[string]func() interface{}),
+	}
 }
 
-func (c *Container) RegisterType(name string, constructor interface{}) {
-	// need to implement
+// registertype сохраняет конструктор по заданному имени.
+func (c *container) RegisterType(name string, constructor interface{}) {
+	// Приводим интерфейс к конкретному типу функции, ожидаемому в тесте.
+	if factory, ok := constructor.(func() interface{}); ok {
+		c.factories[name] = factory
+	}
 }
 
-func (c *Container) Resolve(name string) (interface{}, error) {
-	// need to implement
-	return nil, nil
+// resolve вызывает конструктор и возвращает новый экземпляр или ошибку.
+func (c *container) Resolve(name string) (interface{}, error) {
+	factory, exists := c.factories[name]
+	if !exists {
+		return nil, fmt.Errorf("service %s not found", name)
+	}
+
+	// Вызов функции гарантирует создание нового объекта при каждом запросе
+	return factory(), nil
 }
 
 func TestDIContainer(t *testing.T) {

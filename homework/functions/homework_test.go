@@ -7,19 +7,39 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Map преобразует каждый элемент среза с помощью функции action.
 func Map(data []int, action func(int) int) []int {
-	// need to implement
-	return nil
+	if data == nil {
+		return nil
+	}
+	result := make([]int, len(data))
+	for i, v := range data {
+		result[i] = action(v)
+	}
+	return result
 }
 
+// Filter оставляет только те элементы, для которых action возвращает true.
 func Filter(data []int, action func(int) bool) []int {
-	// need to implement
-	return nil
+	if data == nil {
+		return nil
+	}
+	result := make([]int, 0)
+	for _, v := range data {
+		if action(v) {
+			result = append(result, v)
+		}
+	}
+	return result
 }
 
+// Reduce последовательно сворачивает элементы среза, используя начальное значение.
 func Reduce(data []int, initial int, action func(int, int) int) int {
-	// need to implement
-	return 0
+	result := initial
+	for _, v := range data {
+		result = action(result, v)
+	}
+	return result
 }
 
 func TestMap(t *testing.T) {
@@ -29,29 +49,21 @@ func TestMap(t *testing.T) {
 		result []int
 	}{
 		"nil numbers": {
-			action: func(number int) int {
-				return -number
-			},
+			action: func(number int) int { return -number },
 		},
 		"empty numbers": {
-			data: []int{},
-			action: func(number int) int {
-				return -number
-			},
+			data:   []int{},
+			action: func(number int) int { return -number },
 			result: []int{},
 		},
 		"inc numbers": {
-			data: []int{1, 2, 3, 4, 5},
-			action: func(number int) int {
-				return number + 1
-			},
+			data:   []int{1, 2, 3, 4, 5},
+			action: func(number int) int { return number + 1 },
 			result: []int{2, 3, 4, 5, 6},
 		},
 		"double numbers": {
-			data: []int{1, 2, 3, 4, 5},
-			action: func(number int) int {
-				return number * number
-			},
+			data:   []int{1, 2, 3, 4, 5},
+			action: func(number int) int { return number * number },
 			result: []int{1, 4, 9, 16, 25},
 		},
 	}
@@ -71,29 +83,21 @@ func TestFilter(t *testing.T) {
 		result []int
 	}{
 		"nil numbers": {
-			action: func(number int) bool {
-				return number == 0
-			},
+			action: func(number int) bool { return number == 0 },
 		},
 		"empty numbers": {
-			data: []int{},
-			action: func(number int) bool {
-				return number == 1
-			},
+			data:   []int{},
+			action: func(number int) bool { return number == 1 },
 			result: []int{},
 		},
 		"even numbers": {
-			data: []int{1, 2, 3, 4, 5},
-			action: func(number int) bool {
-				return number%2 == 0
-			},
+			data:   []int{1, 2, 3, 4, 5},
+			action: func(number int) bool { return number%2 == 0 },
 			result: []int{2, 4},
 		},
 		"positive numbers": {
-			data: []int{-1, -2, 1, 2},
-			action: func(number int) bool {
-				return number > 0
-			},
+			data:   []int{-1, -2, 1, 2},
+			action: func(number int) bool { return number > 0 },
 			result: []int{1, 2},
 		},
 	}

@@ -1,4 +1,4 @@
-package main
+package duplicate_check
 
 import (
 	"testing"
@@ -33,7 +33,9 @@ func HasDuplicatesFrom1To7WithArray(data []int) bool {
 }
 
 func HasDuplicatesFrom1To7WithHashTable(data []int) bool {
-	lookup := make(map[int]struct{}, 8)
+	size := len(data)
+	lookup := make(map[int]struct{}, size)
+	// lookup := make(map[int]struct{}, 8)
 	for _, number := range data {
 		_, found := lookup[number]
 		if found {
@@ -48,21 +50,21 @@ func HasDuplicatesFrom1To7WithHashTable(data []int) bool {
 
 func BenchmarkHasDuplicatesFrom1To7WithBits(b *testing.B) {
 	data := []int{1, 5, 2, 3, 6, 4, 7, 2, 7}
-	for i := 1; i < b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		_ = HasDuplicatesFrom1To7WithBits(data)
 	}
 }
 
 func BenchmarkHasDuplicatesFrom1To7WithArray(b *testing.B) {
 	data := []int{1, 5, 2, 3, 6, 4, 7, 2, 7}
-	for i := 1; i < b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		_ = HasDuplicatesFrom1To7WithArray(data)
 	}
 }
 
 func BenchmarkHasDuplicatesFrom1To7WithHashTable(b *testing.B) {
 	data := []int{1, 5, 2, 3, 6, 4, 7, 2, 7}
-	for i := 1; i < b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		_ = HasDuplicatesFrom1To7WithHashTable(data)
 	}
 }

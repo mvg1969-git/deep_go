@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,16 +11,55 @@ import (
 
 // go test -v homework_test.go
 
+func Serialize(p Person) string {
+	val := reflect.ValueOf(p)
+	typ := reflect.TypeOf(p)
+	var lines []string
+
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		structField := typ.Field(i)
+
+		// Получаем значение тега properties
+		tag := structField.Tag.Get("properties")
+		if tag == "" {
+			continue
+		}
+
+		// Разделяем имя ключа и параметры (например, omitempty)
+		parts := strings.Split(tag, ",")
+		key := parts[0]
+		omitempty := len(parts) > 1 && parts[1] == "omitempty"
+
+		// Проверяем, пустое ли поле, для omitempty
+		if omitempty && field.IsZero() {
+			continue
+		}
+
+		// Форматируем базовые типы в строку
+		var strVal string
+		switch field.Kind() {
+		case reflect.String:
+			strVal = field.String()
+		case reflect.Int:
+			strVal = fmt.Sprintf("%d", field.Int())
+		case reflect.Bool:
+			strVal = fmt.Sprintf("%t", field.Bool())
+		default:
+			strVal = fmt.Sprintf("%v", field.Interface())
+		}
+
+		lines = append(lines, fmt.Sprintf("%s=%s", key, strVal))
+	}
+
+	return strings.Join(lines, "\n")
+}
+
 type Person struct {
 	Name    string `properties:"name"`
 	Address string `properties:"address,omitempty"`
 	Age     int    `properties:"age"`
 	Married bool   `properties:"married"`
-}
-
-func Serialize(person Person) string {
-	// need to implement
-	return ""
 }
 
 func TestSerialization(t *testing.T) {
